@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = ["tdrust", "tdrust-tl", "sample-app", "group-bot"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/your-org/tdrust"
+keywords = ["telegram", "tdlib", "tdjson", "bot", "async"]
+categories = ["api-bindings", "asynchronous"]
+
+[workspace.dependencies]
+tdrust-tl = { path = "tdrust-tl", version = "0.1.0" }

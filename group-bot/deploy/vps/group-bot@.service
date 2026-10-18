@@ -1,0 +1,36 @@
+# group-bot on a VPS: one instance per bot, run as the unprivileged user
+# "groupbot" from /opt/group-bot. Install as /etc/systemd/system/group-bot@.service
+# and start a bot with: systemctl enable --now group-bot@<name>
+[Unit]
+Description=Telegram group management bot (%i)
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target postgresql.service redis-server.service
+
+[Service]
+User=groupbot
+Group=groupbot
+# The shared settings come from /opt/group-bot/.env (found in a parent directory);
+# this bot's token and TDLib session directory come from its own file.
+WorkingDirectory=/opt/group-bot/bots/%i
+Environment=HOME=/opt/group-bot
+EnvironmentFile=/opt/group-bot/bots/%i.env
+ExecStart=/opt/group-bot/group-bot
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Hardening: the bot only needs to write its TDLib session directory.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/group-bot/bots
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

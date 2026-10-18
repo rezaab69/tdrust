@@ -1,0 +1,8 @@
+/target
+# Local credentials for the sample app
+/sample-app/.env
+# TDLib session databases created by the examples
+/tdlib
+/tdlib-bot
+/tdrust/tdlib
+/tdrust/tdlib-bot

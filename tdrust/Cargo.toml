@@ -1,0 +1,42 @@
+[package]
+name = "tdrust"
+description = "An async, fully typed Rust framework for Telegram's TDLib"
+readme = "../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+build = "build.rs"
+include = ["src/**/*", "tl/td_api.tl", "build.rs", "examples/**/*", "tests/**/*", "Cargo.toml"]
+
+[features]
+default = ["console"]
+## Interactive terminal login (`ConsoleAuthenticator`) with hidden password input.
+console = ["dep:rpassword"]
+## Link against `tdjson` at build time instead of loading it at run time.
+## Set `TDJSON_LIB_DIR` to the directory that contains the library.
+link = []
+
+[dependencies]
+base64 = "0.22"
+futures-core = "0.3"
+libloading = "0.8"
+log = "0.4"
+rpassword = { version = "7", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1.38", default-features = false, features = ["sync"] }
+
+[dev-dependencies]
+tokio = { version = "1.38", features = ["macros", "rt-multi-thread", "signal", "time"] }
+
+[build-dependencies]
+tdrust-tl.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

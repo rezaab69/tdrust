@@ -1,0 +1,13 @@
+[package]
+name = "tdrust-tl"
+description = "Parser and Rust code generator for TDLib's td_api.tl schema"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["telegram", "tdlib", "tl", "codegen"]
+categories = ["development-tools::build-utils", "parser-implementations"]
+
+[dependencies]
