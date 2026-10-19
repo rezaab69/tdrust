@@ -71,8 +71,9 @@ You need:
   For an existing bot, send `/token` to see its token.
 
 > **Prefer not to edit a file?** You can skip the rest of this step. When you
-> run `bot` or `user` in a terminal, the app asks for any missing or invalid
-> API id, API hash or bot token (the hash and token are typed hidden), then
+> run `check`, `bot` or `user` in a terminal, the app asks for any missing or
+> invalid API id, API hash or bot token (`check` skips the token; the hash
+> and token are typed hidden), then
 > offers to save them to `.env` so you are asked only once. It does not ask
 > for `TDJSON_PATH`; set that in `.env` or the environment. Without a
 > terminal, for example under systemd, it does not ask and reports what is

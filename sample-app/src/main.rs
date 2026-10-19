@@ -23,7 +23,7 @@ Modes:
   user    Log in with your own account, list your chats and print new messages
 
 Settings are read from the environment and from sample-app/.env. In a
-terminal, `bot` and `user` ask for any required setting that is missing.
+terminal, `check`, `bot` and `user` ask for any required setting that is missing.
 See sample-app/README.md for step-by-step instructions.";
 
 fn main() -> ExitCode {
@@ -48,7 +48,7 @@ fn main() -> ExitCode {
     // the environment, so it runs before the async runtime starts its threads.
     let need_bot_token = match mode.as_str() {
         "bot" => Some(true),
-        "user" => Some(false),
+        "check" | "user" => Some(false),
         _ => None,
     };
     if let Some(need_bot_token) = need_bot_token {
