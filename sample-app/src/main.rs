@@ -22,7 +22,8 @@ Modes:
   bot     Run a bot that answers commands (needs TELEGRAM_BOT_TOKEN)
   user    Log in with your own account, list your chats and print new messages
 
-Settings are read from the environment and from sample-app/.env.
+Settings are read from the environment and from sample-app/.env. In a
+terminal, `bot` and `user` ask for any required setting that is missing.
 See sample-app/README.md for step-by-step instructions.";
 
 fn main() -> ExitCode {
@@ -42,6 +43,20 @@ fn main() -> ExitCode {
         println!("{USAGE}");
         return ExitCode::FAILURE;
     };
+
+    // Ask for missing settings in a terminal. Like `.env` above, this modifies
+    // the environment, so it runs before the async runtime starts its threads.
+    let need_bot_token = match mode.as_str() {
+        "bot" => Some(true),
+        "user" => Some(false),
+        _ => None,
+    };
+    if let Some(need_bot_token) = need_bot_token {
+        if let Err(err) = config::prompt_missing(need_bot_token) {
+            return fail(err);
+        }
+    }
+
     let runtime = match tokio::runtime::Runtime::new() {
         Ok(runtime) => runtime,
         Err(err) => return fail(format!("cannot start the async runtime: {err}")),
@@ -118,15 +133,19 @@ fn check() -> Result<(), String> {
     }
 
     let api_id = std::env::var("TELEGRAM_API_ID").unwrap_or_default();
-    let api_id_ok = api_id.trim().parse::<i32>().is_ok();
-    report(api_id_ok, "TELEGRAM_API_ID", if api_id_ok { api_id } else { "missing or not a number".into() });
+    let api_id_ok = config::valid_api_id(&api_id);
+    report(
+        api_id_ok,
+        "TELEGRAM_API_ID",
+        if api_id_ok { api_id } else { "missing, not a number, or still the example value".into() },
+    );
 
     let api_hash = std::env::var("TELEGRAM_API_HASH").unwrap_or_default();
-    let api_hash_ok = api_hash.trim().len() == 32;
+    let api_hash_ok = config::valid_api_hash(&api_hash);
     report(
         api_hash_ok,
         "TELEGRAM_API_HASH",
-        if api_hash_ok { "set".into() } else { "missing or not 32 characters".into() },
+        if api_hash_ok { "set".into() } else { "missing, not 32 characters, or still the example value".into() },
     );
 
     let token = config::bot_token();

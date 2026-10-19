@@ -351,6 +351,7 @@ dependencies = [
  "dotenvy",
  "env_logger",
  "log",
+ "rpassword",
  "tdrust",
  "tokio",
 ]

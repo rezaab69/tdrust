@@ -4,8 +4,8 @@
 # a release build, and a check that TDLib loads.
 #
 # Usage (as root):
-#   sudo ./install-linux.sh
-#   sudo ./install-linux.sh --dir /srv/tdrust --branch main
+#   sudo ./install.sh
+#   sudo ./install.sh --dir /srv/tdrust --branch main
 #
 # Options:
 #   --repo URL        Git repository to clone (default: https://github.com/rezaab69/tdrust.git)
@@ -34,7 +34,7 @@ die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Usage: sudo ./install-linux.sh [options]
+Usage: sudo ./install.sh [options]
 
   --repo URL        Git repository to clone (default: https://github.com/rezaab69/tdrust.git)
   --branch NAME     Branch to check out (default: main)
@@ -171,10 +171,12 @@ tdrust is installed.
   Examples:        $SRC_DIR/target/release/examples/
 
 Next steps:
+  - Load cargo and TDJSON_PATH into this shell (new login shells do it for you):
+      source ~/.cargo/env && source /etc/profile.d/tdrust.sh
   - Use it from your own project:
       tdrust = { git = "$REPO_URL" }
   - Try the sample app: copy $SRC_DIR/sample-app/.env.example to
     $SRC_DIR/sample-app/.env, fill it in, then run
       cd $SRC_DIR && cargo run -p sample-app -- check
-  - Update later by rerunning: sudo $SRC_DIR/scripts/install-linux.sh --dir $SRC_DIR
+  - Update later by rerunning: sudo bash $SRC_DIR/install.sh --dir $SRC_DIR
 EOF
