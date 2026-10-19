@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["tdrust", "tdrust-tl", "sample-app", "group-bot"]
+members = ["tdrust", "tdrust-tl", "sample-app"]
 
 [workspace.package]
 version = "0.1.0"
