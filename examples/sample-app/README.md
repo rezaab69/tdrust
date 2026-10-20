@@ -46,6 +46,13 @@ the project is in `/opt/tdrust` (so the app is in
 `/opt/tdrust/examples/sample-app`) and TDLib is at `/opt/tdlib/libtdjson.so`.
 The script can be run again to update an existing install.
 
+Compiling needs about **6 GB of memory** (RAM plus swap). If the machine has
+less, the script creates a swap file for the missing amount (in
+`/var/tdrust.swap`) and removes it again when it finishes. It needs the disk
+space for it plus 1 GB spare. Options: `--keep-swap` keeps the swap file and
+enables it at boot, `--no-swap` turns this off, and `--swap-file PATH` puts it
+elsewhere.
+
 If you prefer to do it by hand, or want to see what is installed, continue
 with step 1.
 
@@ -346,7 +353,7 @@ To reset a login, stop the app and delete its saved session:
 | --- | --- |
 | `cargo: command not found` | Run `source ~/.cargo/env`, or install Rust (step 2). |
 | `linker 'cc' not found` or a similar build error | The C toolchain is missing. Run `sudo apt-get install -y build-essential`. |
-| The build ends with `Killed` | The server ran out of memory while compiling. Add swap space or build on a larger machine. |
+| The build ends with `Killed` | The server ran out of memory; compiling needs about 6 GB of RAM plus swap. Check with `free -h`, then add swap (for example `sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`) or build on a larger machine. The install script does this for you. |
 | First build seems stuck | It compiles about 2,000 generated TDLib types; allow several minutes. |
 | `cannot load TDLib` / `[FAIL] TDLib` | `TDJSON_PATH` is wrong. Run `ls ~/tdlib/` and make sure `.env` points at `~/tdlib/libtdjson.so`. If `ldd` in step 4 reported `not found`, repeat that step. |
 | `TELEGRAM_API_ID is not set` | `.env` is missing or not in `examples/sample-app/`. Repeat step 5. |

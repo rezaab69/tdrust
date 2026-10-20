@@ -13,7 +13,14 @@
 #   --dir PATH        Where the source goes (default: /opt/tdrust)
 #   --tdlib-dir PATH  Where libtdjson goes (default: /opt/tdlib)
 #   --force-tdlib     Download TDLib again even if it is already installed
+#   --swap-file PATH  Swap file to create if memory is short (default: /var/tdrust.swap)
+#   --keep-swap       Keep the swap file after the build and enable it at boot
+#   --no-swap         Never create a swap file, even if memory is short
 #   -h, --help        Show this help
+#
+# Compiling needs about 6 GB of memory. If RAM plus existing swap is below
+# that, a swap file is created for the missing amount and removed again when
+# the script ends (unless --keep-swap is given).
 #
 # Safe to run again: existing packages, TDLib and the git checkout are reused
 # or updated.
@@ -26,8 +33,24 @@ TDLIB_DIR="/opt/tdlib"
 TDLIB_VERSION="1.8.67"
 FORCE_TDLIB=0
 
+# Memory the build needs (RAM + swap), in MB.
+REQUIRED_MEM_MB=6144
+SWAP_FILE="/var/tdrust.swap"
+USE_SWAP=1
+KEEP_SWAP=0
+SWAP_CREATED=0
+
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+
+cleanup() {
+    rm -rf "$WORK"
+    if [[ "$SWAP_CREATED" -eq 1 && "$KEEP_SWAP" -eq 0 ]]; then
+        log "Removing the temporary swap file $SWAP_FILE"
+        swapoff "$SWAP_FILE" 2>/dev/null || true
+        rm -f "$SWAP_FILE"
+    fi
+}
+trap cleanup EXIT
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
@@ -41,7 +64,13 @@ Usage: sudo ./install.sh [options]
   --dir PATH        Where the source goes (default: /opt/tdrust)
   --tdlib-dir PATH  Where libtdjson goes (default: /opt/tdlib)
   --force-tdlib     Download TDLib again even if it is already installed
+  --swap-file PATH  Swap file to create if memory is short (default: /var/tdrust.swap)
+  --keep-swap       Keep the swap file after the build and enable it at boot
+  --no-swap         Never create a swap file, even if memory is short
   -h, --help        Show this help
+
+Compiling needs about 6 GB of memory (RAM + swap). If there is less, a swap
+file is created for the missing amount and removed when the script ends.
 EOF
 }
 
@@ -52,6 +81,9 @@ while [[ $# -gt 0 ]]; do
         --dir) SRC_DIR="${2:?--dir needs a value}"; shift 2 ;;
         --tdlib-dir) TDLIB_DIR="${2:?--tdlib-dir needs a value}"; shift 2 ;;
         --force-tdlib) FORCE_TDLIB=1; shift ;;
+        --swap-file) SWAP_FILE="${2:?--swap-file needs a value}"; shift 2 ;;
+        --keep-swap) KEEP_SWAP=1; shift ;;
+        --no-swap) USE_SWAP=0; shift ;;
         -h|--help) usage; exit 0 ;;
         *) die "unknown option: $1 (see --help)" ;;
     esac
@@ -71,6 +103,71 @@ if [[ -r /etc/os-release ]]; then
         *) log "warning: ${ID:-unknown} is not tested; continuing" ;;
     esac
 fi
+
+# ---- Memory ----------------------------------------------------------------
+
+# Prints a /proc/meminfo value (for example MemTotal) in MB.
+mem_mb() { awk -v key="$1:" '$1 == key { print int($2 / 1024) }' /proc/meminfo; }
+
+# make_swap METHOD SIZE_MB: creates and enables $SWAP_FILE. METHOD is
+# "fallocate" (fast) or "dd" (works on file systems where fallocate does not).
+make_swap() {
+    rm -f "$SWAP_FILE"
+    if [[ "$1" == "fallocate" ]]; then
+        (umask 077; fallocate -l "${2}M" "$SWAP_FILE")
+    else
+        (umask 077; dd if=/dev/zero of="$SWAP_FILE" bs=1M count="$2" status=none)
+    fi && chmod 600 "$SWAP_FILE" && mkswap "$SWAP_FILE" >/dev/null && swapon "$SWAP_FILE"
+}
+
+# Makes sure RAM + swap reaches REQUIRED_MEM_MB, by creating a swap file for
+# the missing amount. Problems with swap are warnings: the build may still fit.
+ensure_memory() {
+    local ram swap need free
+    ram="$(mem_mb MemTotal)"
+    swap="$(mem_mb SwapTotal)"
+
+    if (( ram + swap >= REQUIRED_MEM_MB )); then
+        log "Memory: ${ram} MB RAM + ${swap} MB swap is enough (the build needs ${REQUIRED_MEM_MB} MB)"
+        return
+    fi
+    if [[ "$USE_SWAP" -eq 0 ]]; then
+        log "warning: ${ram} MB RAM + ${swap} MB swap is below the ${REQUIRED_MEM_MB} MB the build needs; it may be killed (--no-swap given)"
+        return
+    fi
+    if ! command -v mkswap >/dev/null 2>&1 || ! command -v swapon >/dev/null 2>&1; then
+        log "warning: mkswap/swapon not found, cannot add swap; the build may run out of memory"
+        return
+    fi
+
+    if grep -qs "^$SWAP_FILE " /proc/swaps; then
+        die "$SWAP_FILE is already in use but memory is still short (${ram} MB RAM + ${swap} MB swap). Run 'swapoff $SWAP_FILE; rm $SWAP_FILE' and rerun, or pass another --swap-file."
+    fi
+    rm -f "$SWAP_FILE"
+
+    need=$(( REQUIRED_MEM_MB - ram - swap ))
+    (( need >= 1024 )) || need=1024
+    install -d "$(dirname "$SWAP_FILE")"
+    free="$(df -Pm "$(dirname "$SWAP_FILE")" | awk 'NR == 2 { print $4 }')"
+    if (( free < need + 1024 )); then
+        die "need ${need} MB of swap in $(dirname "$SWAP_FILE") but only ${free} MB is free (1 GB must stay spare). Free disk space, pass --swap-file on a larger disk, or pass --no-swap."
+    fi
+
+    log "Only ${ram} MB RAM + ${swap} MB swap: creating a ${need} MB swap file at $SWAP_FILE"
+    if make_swap fallocate "$need" || make_swap dd "$need"; then
+        SWAP_CREATED=1
+        if [[ "$KEEP_SWAP" -eq 1 ]]; then
+            grep -qsF "$SWAP_FILE" /etc/fstab || echo "$SWAP_FILE none swap sw 0 0" >> /etc/fstab
+            log "Swap file kept and enabled at boot (remove it with: swapoff $SWAP_FILE; rm $SWAP_FILE; and delete its line in /etc/fstab)"
+        fi
+        log "Memory is now $(mem_mb MemTotal) MB RAM + $(mem_mb SwapTotal) MB swap"
+    else
+        rm -f "$SWAP_FILE"
+        log "warning: could not enable a swap file here (a container or unsupported file system?); the build may run out of memory"
+    fi
+}
+
+ensure_memory
 
 # ---- System packages -------------------------------------------------------
 
