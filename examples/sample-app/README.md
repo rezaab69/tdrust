@@ -30,7 +30,43 @@ You need:
 > **On Windows?** Install Ubuntu in WSL with `wsl --install -d Ubuntu` in
 > PowerShell, open the Ubuntu terminal, and follow this guide there.
 
-### Quick install (optional)
+### Quickest: the sample app installer
+
+[`install.sh`](install.sh) in this folder sets up the sample app by itself, with
+no questions: build tools, Rust, TDLib, swap space if the machine has less than
+6 GB of memory, the build, the `.env` settings file, a setup check and,
+if you want, a background service for the bot. It uses `sudo` only for the
+steps that need root (your password may be asked) and runs fine as root too.
+
+```bash
+sudo apt-get install -y git        # if git is missing
+git clone https://github.com/rezaab69/tdrust.git
+TELEGRAM_API_ID=12345678 \
+TELEGRAM_API_HASH=0123456789abcdef0123456789abcdef \
+TELEGRAM_BOT_TOKEN=123456789:AAAbbbCCCdddEEEfffGGGhhhIIIjjjKKKll \
+bash tdrust/examples/sample-app/install.sh --service
+```
+
+Replace the three example values with your own (see
+[Step 5](#step-5-enter-your-settings) for where to get them). The first run
+takes several minutes, mostly compiling. With `--service`, the bot then runs in
+the background as the `tdrust-bot` service and starts at every boot:
+
+```bash
+systemctl status tdrust-bot      # is it running?
+journalctl -u tdrust-bot -f      # follow the logs (Ctrl+C to leave)
+```
+
+Without `--service` the bot is not started; run it with
+`tdrust/examples/sample-app/target/release/sample-app bot`. Without
+credentials the install still finishes: in a terminal the app asks for them and
+saves them, otherwise it tells you what is missing. Other options: `--tdjson
+PATH` (use an existing TDLib), `--keep-swap`, `--no-swap`, `--swap-file PATH`;
+see `bash install.sh --help`. The script can be run again at any time; it
+reuses what is already installed. To understand each part, or to install by
+hand, follow the steps below.
+
+### Quick install of tdrust itself (optional)
 
 On a fresh Ubuntu/Debian server you can let the project's install script do
 steps 1 to 4 for you. It must run as root and puts everything in `/opt`:
@@ -40,15 +76,32 @@ curl -fsSL https://raw.githubusercontent.com/rezaab69/tdrust/main/install.sh -o 
 sudo bash install.sh
 ```
 
-When it finishes, run `source ~/.cargo/env`, then continue with
-[Step 5](#step-5-enter-your-settings). Use these two values in later steps:
-the project is in `/opt/tdrust` (so the app is in
-`/opt/tdrust/examples/sample-app`) and TDLib is at `/opt/tdlib/libtdjson.so`.
-The script can be run again to update an existing install.
+The script installs tdrust itself, but it does **not** build or configure the
+sample app, which is a separate project. To do that too, run
+`bash /opt/tdrust/examples/sample-app/install.sh` (see the quickest install
+above). To do it by hand, load Rust and the TDLib path into your terminal and
+go to the app:
+
+```bash
+source ~/.cargo/env && source /etc/profile.d/tdrust.sh
+cd /opt/tdrust/examples/sample-app
+```
+
+Then continue with [Step 5](#step-5-enter-your-settings) (settings), and read
+the memory note at the start of [Step 6](#step-6-check-the-setup) before the
+first build. Use these values: the project is in `/opt/tdrust` (so the app is
+in `/opt/tdrust/examples/sample-app`) and TDLib is at
+`/opt/tdlib/libtdjson.so`. The script can be run again to update an existing
+install.
+
+> `sudo: unable to resolve host <name>` at the start of the script is a
+> harmless warning about the machine's host name. To silence it, add the line
+> `127.0.1.1 <name>` to `/etc/hosts`.
 
 Compiling needs about **6 GB of memory** (RAM plus swap). If the machine has
 less, the script creates a swap file for the missing amount (in
-`/var/tdrust.swap`) and removes it again when it finishes. It needs the disk
+`/var/tdrust.swap`) and removes it again when it finishes, so you must add swap
+again for the sample app's own build (see Step 6). It needs the disk
 space for it plus 1 GB spare. Options: `--keep-swap` keeps the swap file and
 enables it at boot, `--no-swap` turns this off, and `--swap-file PATH` puts it
 elsewhere.
@@ -177,14 +230,40 @@ application.
 
 ## Step 6: Check the setup
 
+**Memory note.** The first build compiles about 2,000 generated TDLib types and
+needs roughly **6 GB of memory (RAM plus swap)**. Check what you have:
+
 ```bash
-cd ~/tdrust/examples/sample-app
+free -h
+```
+
+If "Mem" plus "Swap" in the Total column is below about 6 GB (for example a
+2 GB server), add temporary swap first. Otherwise the build ends with
+`Killed`. This creates 5 GB (check free disk space with `df -h`):
+
+```bash
+sudo fallocate -l 5G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+free -h        # Swap should now show about 5G
+```
+
+(As root, leave out `sudo`.) The install script's own swap file is removed when
+it finishes, so this is needed even after the quick install. Once the build has
+finished, you can remove the swap again; running the app needs far less:
+
+```bash
+sudo swapoff /swapfile && sudo rm /swapfile
+```
+
+Now run the check:
+
+```bash
+cd ~/tdrust/examples/sample-app      # after the quick install: /opt/tdrust/examples/sample-app
 cargo run -- check
 ```
 
-The first run downloads and compiles the dependencies and about 2,000
-generated TDLib types, so it takes **several minutes** (longer on a small
-server). Later runs take seconds. Expected output:
+The first run downloads and compiles the dependencies, so it takes **several
+minutes** (longer on a small server). Later runs take seconds. Expected output:
 
 ```text
 Checking the sample app setup...
