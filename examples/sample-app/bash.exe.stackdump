@@ -15,10 +15,10 @@ Loaded modules:
 7FFEA6FB0000 apphelp.dll
 7FFEAB900000 USER32.dll
 7FFEAA3C0000 win32u.dll
+000210040000 msys-2.0.dll
 7FFEAB8D0000 GDI32.dll
 7FFEAA9E0000 gdi32full.dll
 7FFEAA220000 msvcp_win.dll
-000210040000 msys-2.0.dll
 7FFEAA480000 ucrtbase.dll
 7FFEAB810000 advapi32.dll
 7FFEAC740000 msvcrt.dll
