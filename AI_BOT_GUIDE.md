@@ -111,7 +111,7 @@ tdrust is not on crates.io. Depend on it by path. The repository layout is:
 tdrust/               <- workspace root (Cargo.toml with [workspace])
   tdrust/             <- the framework crate
   tdrust-tl/          <- code generator (build dependency; ignore)
-  sample-app/         <- a complete example bot + user client
+  examples/sample-app/ <- a standalone example bot + user client (not a workspace member)
   libtdjson/libtdjson.so   <- a prebuilt Linux TDLib library
 ```
 
@@ -124,7 +124,7 @@ a workspace when it's not".
 # root Cargo.toml
 [workspace]
 resolver = "2"
-members = ["tdrust", "tdrust-tl", "sample-app", "my-bot"]
+members = ["tdrust", "tdrust-tl", "my-bot"]
 ```
 
 ```toml

@@ -82,7 +82,7 @@ You need:
 Create the settings file from the template and open it:
 
 ```bash
-cd /mnt/d/ClaudeCode/tdrust/sample-app
+cd /mnt/d/ClaudeCode/tdrust/examples/sample-app
 cp .env.example .env
 nano .env
 ```
@@ -97,7 +97,7 @@ TDJSON_PATH=~/tdjson/x/tdjson.libs/libtdjson-41165018.so.1.8.67
 ```
 
 Save with `Ctrl+O`, `Enter`, then exit with `Ctrl+X`. (You can also edit
-`D:\ClaudeCode\tdrust\sample-app\.env` in VS Code on Windows.)
+`D:\ClaudeCode\tdrust\examples\sample-app\.env` in VS Code on Windows.)
 
 `.env` is excluded from git. Keep it private: the token and hash give full
 control of your bot and application.
@@ -105,9 +105,9 @@ control of your bot and application.
 ## Step 5: Check the setup
 
 ```bash
-cd /mnt/d/ClaudeCode/tdrust
+cd /mnt/d/ClaudeCode/tdrust/examples/sample-app
 export CARGO_TARGET_DIR=~/tdrust-target
-cargo run -p sample-app -- check
+cargo run -- check
 ```
 
 `CARGO_TARGET_DIR` puts build files on the fast Linux file system; the first
@@ -126,7 +126,7 @@ Checking the sample app setup...
   [info] bot session directory: /root/.tdrust-sample/bot
   [info] user session directory: /root/.tdrust-sample/user
 
-Everything is in place. Run `cargo run -p sample-app -- bot` or `-- user`.
+Everything is in place. Run `cargo run -- bot` or `-- user`.
 ```
 
 If a line says `FAIL`, fix that setting in `.env` and run the check again.
@@ -134,7 +134,7 @@ If a line says `FAIL`, fix that setting in `.env` and run the check again.
 ## Step 6: Run the bot
 
 ```bash
-cargo run -p sample-app -- bot
+cargo run -- bot
 ```
 
 After a few seconds you see:
@@ -164,7 +164,7 @@ session.
 ## Step 7: Log in with your own account (optional)
 
 ```bash
-cargo run -p sample-app -- user
+cargo run -- user
 ```
 
 The app asks for:
@@ -195,29 +195,29 @@ limited by Telegram.
 ## Everyday commands
 
 ```bash
-cd /mnt/d/ClaudeCode/tdrust && export CARGO_TARGET_DIR=~/tdrust-target
-cargo run -p sample-app -- check       # verify the setup
-cargo run -p sample-app -- bot         # run the bot
-cargo run -p sample-app -- user        # run with your account
-RUST_LOG=debug cargo run -p sample-app -- bot   # more detailed logs
-cargo test -p sample-app               # unit tests
+cd /mnt/d/ClaudeCode/tdrust/examples/sample-app && export CARGO_TARGET_DIR=~/tdrust-target
+cargo run -- check       # verify the setup
+cargo run -- bot         # run the bot
+cargo run -- user        # run with your account
+RUST_LOG=debug cargo run -- bot   # more detailed logs
+cargo test               # unit tests
 ```
 
 For a faster, standalone binary:
 
 ```bash
-cargo build -p sample-app --release
+cargo build --release
 ~/tdrust-target/release/sample-app bot
 ```
 
-The binary still reads `sample-app/.env` from the project directory.
+The binary still reads `examples/sample-app/.env` from the project directory.
 
 ## Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
 | `cannot load TDLib` / `[FAIL] TDLib` | `TDJSON_PATH` is wrong. Run `ls ~/tdjson/x/tdjson.libs/` and copy the exact file name into `.env`. |
-| `TELEGRAM_API_ID is not set` | `.env` is missing or not in `sample-app/`. Repeat step 4. |
+| `TELEGRAM_API_ID is not set` | `.env` is missing or not in `examples/sample-app/`. Repeat step 4. |
 | `API_ID_INVALID` | The API id or hash is wrong. Copy both again from <https://my.telegram.org>. |
 | `ACCESS_TOKEN_INVALID` or other token errors | The bot token is wrong or was revoked. Get the current one from @BotFather with `/token`, put it in `.env`, and delete the old session: `rm -rf ~/.tdrust-sample/bot`. |
 | The bot does not answer in a group | By default bots only see commands in groups. Disable privacy mode in @BotFather (`/setprivacy`) to let it see all messages. |

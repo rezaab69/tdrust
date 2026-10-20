@@ -1,16 +1,19 @@
 [package]
 name = "sample-app"
 description = "A sample Telegram application built with tdrust: a command bot and a user-account client"
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
 publish = false
+
+# A standalone project: not a member of the tdrust workspace in the parent directory.
+[workspace]
 
 [dependencies]
 dotenvy = "0.15"
 env_logger = "0.11"
 log = "0.4"
 rpassword = "7"
-tdrust = { path = "../tdrust" }
+tdrust = { path = "../../tdrust" }
 tokio = { version = "1.38", features = ["macros", "rt-multi-thread", "signal"] }

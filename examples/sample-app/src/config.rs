@@ -1,4 +1,4 @@
-//! Settings from the environment and the optional `sample-app/.env` file.
+//! Settings from the environment and the optional `examples/sample-app/.env` file.
 
 use std::env;
 use std::fs;
@@ -19,7 +19,7 @@ pub fn dotenv_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(".env")
 }
 
-/// Loads `sample-app/.env` into the environment, without overriding
+/// Loads `examples/sample-app/.env` into the environment, without overriding
 /// variables that are already set. Returns whether the file was found.
 ///
 /// Must run before any other thread starts, because it modifies the

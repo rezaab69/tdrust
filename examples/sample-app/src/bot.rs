@@ -198,7 +198,7 @@ mod tests {
         assert_eq!(format_duration(Duration::from_secs(3723)), "1h 2m 3s");
     }
 
-    /// Needs TDLib: `TDJSON_PATH=... cargo test -p sample-app -- --ignored`.
+    /// Needs TDLib: `TDJSON_PATH=... cargo test -- --ignored`.
     #[test]
     #[ignore = "needs TDLib"]
     fn help_is_valid_markdown() {

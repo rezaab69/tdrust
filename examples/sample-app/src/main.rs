@@ -6,7 +6,7 @@
 //! sample-app user    log in with your own account and watch incoming messages
 //! ```
 //!
-//! See `sample-app/README.md` for the setup steps.
+//! See `examples/sample-app/README.md` for the setup steps.
 
 mod bot;
 mod config;
@@ -22,9 +22,9 @@ Modes:
   bot     Run a bot that answers commands (needs TELEGRAM_BOT_TOKEN)
   user    Log in with your own account, list your chats and print new messages
 
-Settings are read from the environment and from sample-app/.env. In a
+Settings are read from the environment and from examples/sample-app/.env. In a
 terminal, `check`, `bot` and `user` ask for any required setting that is missing.
-See sample-app/README.md for step-by-step instructions.";
+See examples/sample-app/README.md for step-by-step instructions.";
 
 fn main() -> ExitCode {
     // Read `.env` before any thread exists: it modifies the environment.
@@ -93,9 +93,9 @@ fn fail(message: String) -> ExitCode {
 fn explain(err: tdrust::Error) -> String {
     let hint = match &err {
         tdrust::Error::Library(_) => {
-            "\n\nhint: set TDJSON_PATH in sample-app/.env to the full path of libtdjson (see README step 3)"
+            "\n\nhint: set TDJSON_PATH in examples/sample-app/.env to the full path of libtdjson (see README step 3)"
         }
-        tdrust::Error::Config(_) => "\n\nhint: fill in sample-app/.env (see README step 4)",
+        tdrust::Error::Config(_) => "\n\nhint: fill in examples/sample-app/.env (see README step 4)",
         tdrust::Error::Td(td) if td.message.contains("API_ID") => {
             "\n\nhint: TELEGRAM_API_ID or TELEGRAM_API_HASH is wrong; copy them again from https://my.telegram.org"
         }
@@ -162,7 +162,7 @@ fn check() -> Result<(), String> {
     }
 
     if problems.is_empty() {
-        println!("\nEverything is in place. Run `cargo run -p sample-app -- bot` or `-- user`.");
+        println!("\nEverything is in place. Run `cargo run -- bot` or `-- user`.");
         Ok(())
     } else {
         Err(format!("fix these settings first: {}", problems.join(", ")))

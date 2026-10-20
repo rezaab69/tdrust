@@ -175,8 +175,8 @@ Next steps:
       source ~/.cargo/env && source /etc/profile.d/tdrust.sh
   - Use it from your own project:
       tdrust = { git = "$REPO_URL" }
-  - Try the sample app: copy $SRC_DIR/sample-app/.env.example to
-    $SRC_DIR/sample-app/.env, fill it in, then run
-      cd $SRC_DIR && cargo run -p sample-app -- check
+  - Try the sample app: copy $SRC_DIR/examples/sample-app/.env.example to
+    $SRC_DIR/examples/sample-app/.env, fill it in, then run
+      cd $SRC_DIR/examples/sample-app && cargo run -- check
   - Update later by rerunning: sudo bash $SRC_DIR/install.sh --dir $SRC_DIR
 EOF

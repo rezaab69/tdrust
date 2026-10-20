@@ -56,7 +56,7 @@ async fn main() -> tdrust::Result<()> {
 ## Getting started
 
 > **Just want to see it run?** Follow the
-> [sample app guide](sample-app/README.md): it walks through every step, from
+> [sample app guide](examples/sample-app/README.md): it walks through every step, from
 > getting TDLib to chatting with your own bot.
 
 ### 1. Get TDLib
@@ -293,7 +293,7 @@ TELEGRAM_BOT_TOKEN=... cargo run --example echo_bot
 | --- | --- |
 | [`tdrust/`](tdrust) | The framework: runtime, client, login, conveniences, and generated API |
 | [`tdrust-tl/`](tdrust-tl) | The `td_api.tl` parser and Rust code generator used by the build script |
-| [`sample-app/`](sample-app) | A complete sample application (command bot and user client) with [step-by-step run instructions](sample-app/README.md) |
+| [`examples/sample-app/`](examples/sample-app) | A standalone sample application (command bot and user client, not a workspace member) with [step-by-step run instructions](examples/sample-app/README.md) |
 
 ## Development
 
